@@ -3,7 +3,9 @@ This repo includes all of the code used to allow people to connect to a receipt 
 A QR code with a link and a random token is generated every 5 minutes and displayed on a website
 
 ++To Do++
+
 Backend that generates random tokens and receives requests
+
 Database
 
 +++Skizze+++
