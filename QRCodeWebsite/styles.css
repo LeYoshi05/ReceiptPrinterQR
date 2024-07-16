@@ -1,0 +1,28 @@
+body {
+    font-family: courier;
+    background-color: #424242;
+  }
+.head {
+    padding: 5px;
+    text-align: center;
+    color: #c1121c;
+    background-color: #323232;
+    font-weight: bold;
+    font-size: 4vw;
+    }
+.content{
+    padding: 10px;
+    text-align: center;
+    background-color: #393939;
+    border: 1px solid #575757;
+    font-size: 3vw;
+    color: #efefef;
+}
+.qrcode{
+    width: auto;
+    height: 40vh;
+}
+.qr-code{
+    text-align: center;
+    margin: 0 auto;
+}

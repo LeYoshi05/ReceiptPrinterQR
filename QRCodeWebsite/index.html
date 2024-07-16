@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <meta http-equiv="refresh" content="10">
+    <head>
+        <link rel="stylesheet" type="text/css" href="index.css">
+    </head>
+    
+    <body>
+        <div class="content">
+            <div name="header">
+                <h1>Ettikettendrucker</h1>
+            </div>
+            <div name="info-text">
+                <p>Um etwas auf dem Ettikettendrucker auszudrucken, bitte QR Code scannen.</p>
+            </div>
+            <div id="qrcode">
+                <script type="text/javascript">
+                    new QRCode(document.getElementById("qrcode"), "http://jindo.dev.naver.com/collie");
+                </script>
+            </div>
+        </div>
+    </body>
+</html>
