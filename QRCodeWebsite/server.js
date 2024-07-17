@@ -1,8 +1,13 @@
 const express = require('express');
 const qr = require('qrcode');
+const mysql = require('mysql');
+const fs = require('fs');
 
 const app = express();
 const port = 3000;
+
+connectToDatabase();
+
 key = "Test"
 url = `https://leghast.de/qr-code?key=${key}`
 app.get('/', (req, res) => {
@@ -49,4 +54,24 @@ const interval = setInterval(function() {
     url = Math.floor(Math.random() * 6164697).toString();
     console.log(url);
   }, 5000);
- 
+
+
+function connectToDatabase() {
+    const loginData = fs.readFileSync('login_data.txt', 'utf8').split('\n');
+    const host = loginData[0].trim();
+    const user = loginData[1].trim();
+    const password = loginData[2].trim();
+
+    console.log(`Connecting to database at ${host} as user ${user}`);
+
+    var con = mysql.createConnection({
+        host: host,
+        user: user,
+        password: password
+    });
+
+    con.connect(function(err) {
+        if (err) throw err;
+        console.log("Connected!");
+    });
+}
