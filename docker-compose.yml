@@ -1,0 +1,28 @@
+version: '3.8'  # Neuere Version für bessere Kompatibilität
+
+services:
+  db:
+    image: mariadb:latest  # Offizielles MariaDB-Image
+    restart: always        # Container bei Neustart automatisch starten
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: dein_sicheres_passwort  # Sicheres Passwort setzen
+      MYSQL_DATABASE: qrtokens              # Datenbank erstellen
+      MYSQL_USER: qrtokens                   # Benutzer erstellen
+      MYSQL_PASSWORD: dein_sicheres_passwort      # Passwort für Benutzer
+    volumes:
+      - ./db_data/var:/var/lib/mysql                 # Daten persistent speichern
+      - ./db_data/conf.d:/etc/mysql/conf.d
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    restart: always
+    ports:
+      - 8090:80   # phpMyAdmin auf Port 8080 verfügbar
+    environment:
+      PMA_HOST: db  # Verbindung zur MariaDB-Instanz "db"
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1  # Erlaubt Verbindungen zu anderen Hosts
+    depends_on:
+      - db
