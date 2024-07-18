@@ -2,11 +2,15 @@ const express = require('express');
 const qr = require('qrcode');
 const mysql = require('mysql');
 const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
+
 
 const app = express();
 const port = 3000;
+var con;
 
 connectToDatabase();
+pushTokenToDB();
 
 key = "Test"
 url = `https://leghast.de/qr-code?key=${key}`
@@ -64,14 +68,29 @@ function connectToDatabase() {
 
     console.log(`Connecting to database at ${host} as user ${user}`);
 
-    var con = mysql.createConnection({
+    con = mysql.createConnection({
         host: host,
         user: user,
-        password: password
+        password: password,
+        database: "qrtokens"
     });
 
     con.connect(function(err) {
         if (err) throw err;
         console.log("Connected!");
+    });
+}
+
+function createToken() {
+    token = uuidv4();
+    return token;
+}
+
+function pushTokenToDB() {
+    token = createToken();
+    var sql = `INSERT INTO tokens (token) VALUES ('${token}')`;
+    con.query(sql, function (err, result) {
+        if (err) throw err;
+        console.log("Token inserted");
     });
 }
