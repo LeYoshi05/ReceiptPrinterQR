@@ -54,6 +54,39 @@ app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
 
+
+
+const print_app = express();
+const print_port = 4242;
+print_app.get('/', (req, res) => {
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                    <head>
+                        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+                    </head>
+                    <body>
+                        <p id="p1">Hello World!</p>
+
+                        <script>
+                            const queryString = window.location.search;
+                            console.log(queryString);
+                            const urlParams = new URLSearchParams(queryString);
+
+                            const key = urlParams.get('key')
+                            document.getElementById("p1").innerHTML = key;
+                        </script>
+                    </body>
+                </html>
+            `;
+            res.send(html);
+        });
+print_app.use('/favicon.ico', express.static('favicon.ico'));
+print_app.listen(print_port, () => {
+    console.log(`print server is running on http://localhost:${print_port}`);
+});
+
+
 const interval = setInterval(async function() {
     pushTokenToDB();
     new_key = await getNewestToken();
