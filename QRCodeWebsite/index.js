@@ -13,6 +13,7 @@ const port = 3000;
 var con;
 
 connectToDatabase();
+createTokenTable()
 pushTokenToDB();
 
 key = "Hello, World!"
@@ -26,8 +27,8 @@ app.get('/', (req, res) => {
             res.status(500).send('Internal Server Error');
         } else {
             // Serve the website with the QR code and CSS stylesheet
-            const html = fs.readFileSync(path.join(__dirname, "pages/qrcode.html"));
-            html.replace("{{qrCode}}", qrCode)
+            let html = fs.readFileSync(path.join(__dirname, "pages", "qrcode.html"), "utf-8");
+            html = html.replace("{{qrCode}}", qrCode)
             res.send(html);
         }
     });
@@ -59,7 +60,7 @@ print_app.get('/', async (req, res) => {
 
     if (await isKeyValid(key)) {
         // Serve the upload.html file
-        let html = fs.readFileSync(path.join(__dirname, 'pages/upload.html'), 'utf8');
+        let html = fs.readFileSync(path.join(__dirname, 'pages', 'upload.html'), 'utf8');
         html = html.replace('{{key}}', key);
         res.send(html);
     } else {
@@ -101,7 +102,7 @@ print_app.post('/upload', async function(req, res, next) {
         console.log(`Datei wurde als ${newFileName} gespeichert.`);
 
         // Aktualisieren Sie die HTML-Ausgabe, um den neuen Dateinamen zu verwenden, falls erforderlich
-        let html = fs.readFileSync(path.join(__dirname, 'pages/printnow.html'), 'utf8');
+        let html = fs.readFileSync(path.join(__dirname, 'pages', 'printnow.html'), 'utf8');
         html = html.replace('{{fileName}}', uploadedFile.name);
         console.log(key);
         useKey(key);
@@ -200,6 +201,15 @@ function connectToDatabase() {
 function createToken() {
     token = uuidv4();
     return token;
+}
+
+function createTokenTable() {
+    var sql = fs.readFileSync(path.join(__dirname, "createTable.sql"), "utf-8")
+    console.log(sql)
+    con.query(sql, function (err, _) {
+        if(err) throw err
+        console.log("Token table created")
+    })
 }
 
 function pushTokenToDB() {
