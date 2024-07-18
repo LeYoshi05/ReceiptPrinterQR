@@ -102,18 +102,29 @@ print_app.post('/upload', async function(req, res, next) {
     console.log(refererUrl)
     console.log(key)
 
-    // Print information about the file to the console
-    console.log(`File Name: ${uploadedFile.name}`);
+    // Extrahieren der Dateiendung
+    const originalExtension = uploadedFile.name.split('.').pop();
 
-    // Read the printnow.html file and replace the placeholder with the file name
-    let html = fs.readFileSync(path.join(__dirname, 'printnow.html'), 'utf8');
-    html = html.replace('{{fileName}}', uploadedFile.name);
-    console.log(key)
-    useKey(key);
-    // Serve the modified printnow.html file
-    res.send(html);
+// Überprüfen der Länge der Dateiendung und Generieren des neuen Dateinamens
+    const newFileName = uuidv4() + (originalExtension.length <= 5 ? '.' + originalExtension : '');
 
-    uploadedFile.mv('./images/' + uuidv4() + '.jpg')
+// Verschieben der Datei mit dem neuen Dateinamen
+    uploadedFile.mv('./images/' + newFileName, function(err) {
+        if (err) {
+            return res.status(500).send(err);
+        }
+
+        // Logik nach dem Verschieben der Datei
+        console.log(`Datei wurde als ${newFileName} gespeichert.`);
+
+        // Aktualisieren Sie die HTML-Ausgabe, um den neuen Dateinamen zu verwenden, falls erforderlich
+        let html = fs.readFileSync(path.join(__dirname, 'printnow.html'), 'utf8');
+        html = html.replace('{{fileName}}', uploadedFile.name);
+        console.log(key);
+        useKey(key);
+        // Serve the modified printnow.html file
+        res.send(html);
+    });
 });
 print_app.use('/printnow.css', express.static('printnow.css'));
 uploaded_image = null;
@@ -127,7 +138,7 @@ const interval = setInterval(async function() {
     pushTokenToDB();
     new_key = await getNewestToken();
     console.log(new_key);
-    url = `localhost:4242?key=${new_key}`
+    url = `http://print.osvacneo.de:4242/?key=${new_key}`
   }, 15000);
 
 function getNewestToken() {
