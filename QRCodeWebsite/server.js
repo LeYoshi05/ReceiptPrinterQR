@@ -59,39 +59,19 @@ app.listen(port, () => {
 
 const print_app = express();
 const print_port = 4242;
+const path = require('path');
+
 print_app.get('/', async (req, res) => {
     const key = req.query.key;
 
     if (await isKeyValid(key)) {
-        const html = `
-            <!DOCTYPE html>
-            <html lang="de">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Bild hochladen</title>
-                <link rel="stylesheet" href="upload.css">
-                <link rel="icon" type="image/x-icon" href="/favicon.ico">
-            </head>
-            <body>
-                <div class="container">
-                    <h1>Bild hochladen</h1>
-                    <form action="/upload" method="post" enctype="multipart/form-data">
-                        <input type="file" name="file" id="file" accept="image/*" required>
-                        <button type="submit">Hochladen</button>
-                    </form>
-                </div>
-
-                <script src="upload.js"></script>
-            </body>
-            </html>
-        `;
-
-        res.send(html);
+        // Serve the upload.html file
+        res.sendFile(path.join(__dirname, 'upload.html'));
     } else {
         res.send('Token invalid');
     }
 });
+
 print_app.use('/upload.css', express.static('upload.css'));
 
 print_app.use(fileUpload({
@@ -105,18 +85,24 @@ print_app.use(fileUpload({
 print_app.post('/upload', async function(req, res, next) {
     // Was a file submitted?
     if (!req.files || !req.files.file) {
-      return res.status(422).send('No files were uploaded');
+        return res.status(422).send('No files were uploaded');
     }
-  
+
     const uploadedFile = req.files.file;
-  
+
     // Print information about the file to the console
     console.log(`File Name: ${uploadedFile.name}`);
-  
-    // Return a web page showing information about the file
-    res.send(`Your file \"${uploadedFile.name}\" will now be printed.`);
+
+    // Read the printnow.html file and replace the placeholder with the file name
+    let html = fs.readFileSync(path.join(__dirname, 'printnow.html'), 'utf8');
+    html = html.replace('{{fileName}}', uploadedFile.name);
+
+    // Serve the modified printnow.html file
+    res.send(html);
+
     uploadedFile.mv('./images/' + uuidv4() + '.jpg')
 });
+print_app.use('/printnow.css', express.static('printnow.css'));
 uploaded_image = null;
 print_app.use('/favicon.ico', express.static('favicon.ico'));
 print_app.listen(print_port, () => {
