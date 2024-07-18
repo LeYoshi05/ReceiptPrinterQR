@@ -59,33 +59,38 @@ app.listen(port, () => {
 
 const print_app = express();
 const print_port = 4242;
-print_app.get('/', (req, res) => {
-    const html = `
+print_app.get('/', async (req, res) => {
+    const key = req.query.key;
+
+    if (await isKeyValid(key)) {
+        const html = `
             <!DOCTYPE html>
-<html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bild hochladen</title>
-    <link rel="stylesheet" href="upload.css">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-</head>
-<body>
-    <div class="container">
-        <h1>Bild hochladen</h1>
-        <form action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" id="file" accept="image/*" required>
-            <button type="submit">Hochladen</button>
-        </form>
-    </div>
+            <html lang="de">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Bild hochladen</title>
+                <link rel="stylesheet" href="upload.css">
+                <link rel="icon" type="image/x-icon" href="/favicon.ico">
+            </head>
+            <body>
+                <div class="container">
+                    <h1>Bild hochladen</h1>
+                    <form action="/upload" method="post" enctype="multipart/form-data">
+                        <input type="file" name="file" id="file" accept="image/*" required>
+                        <button type="submit">Hochladen</button>
+                    </form>
+                </div>
 
-    <script src="upload.js"></script>
-</body>
-</html>
-
+                <script src="upload.js"></script>
+            </body>
+            </html>
         `;
-    
-    res.send(html);
+
+        res.send(html);
+    } else {
+        res.send('Token invalid');
+    }
 });
 print_app.use('/upload.css', express.static('upload.css'));
 
