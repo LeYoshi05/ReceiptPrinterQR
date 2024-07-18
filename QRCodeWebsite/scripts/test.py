@@ -1,13 +1,20 @@
 import os
 import time
 import subprocess
+from pathlib import Path
 
 while True:
   # Verzeichnis für Bilder definieren
   bilder_verzeichnis = "images"
 
   # Liste aller Dateien im Verzeichnis erhalten
+  dateien = None
+
+  if not Path(bilder_verzeichnis).is_dir():
+    os.mkdir(bilder_verzeichnis)
+
   dateien = os.listdir(bilder_verzeichnis)
+  
 
   # Prüfen, ob Bilder im Verzeichnis vorhanden sind
   if len(dateien) > 0:
