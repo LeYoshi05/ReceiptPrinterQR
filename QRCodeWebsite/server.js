@@ -2,6 +2,7 @@ const express = require('express');
 const qr = require('qrcode');
 const mysql = require('mysql');
 const fs = require('fs');
+const fileUpload = require('express-fileupload');
 const { v4: uuidv4 } = require('uuid');
 
 
@@ -59,28 +60,61 @@ app.listen(port, () => {
 const print_app = express();
 const print_port = 4242;
 print_app.get('/', (req, res) => {
-            const html = `
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <link rel="icon" type="image/x-icon" href="/favicon.ico">
-                    </head>
-                    <body>
-                        <p id="p1">Hello World!</p>
+    const html = `
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <link rel="icon" type="image/x-icon" href="/favicon.ico">
+            </head>
+            <body>
+                <p id="p1">Hello World!</p>
 
-                        <script>
-                            const queryString = window.location.search;
-                            console.log(queryString);
-                            const urlParams = new URLSearchParams(queryString);
+                <div class="image-input">
+                    <form action="/upload" method="post" enctype="multipart/form-data">
+                        <input type="file" name="file" id="file" accept="image/*">
+                        <input type="submit" value="Upload">
+                    </form>
+                </div>
 
-                            const key = urlParams.get('key')
-                            document.getElementById("p1").innerHTML = key;
-                        </script>
-                    </body>
-                </html>
-            `;
-            res.send(html);
-        });
+                <script>
+                    const queryString = window.location.search;
+                    console.log(queryString);
+                    const urlParams = new URLSearchParams(queryString);
+
+                    const key = urlParams.get('key')
+                    document.getElementById("p1").innerHTML = key;
+                </script>
+            </body>
+        </html>
+    `;
+    res.send(html);
+});
+
+print_app.use(fileUpload({
+    // Configure file uploads with maximum file size 10MB
+    limits: { fileSize: 10 * 1024 * 1024 },
+  
+    // Temporarily store uploaded files to disk, rather than buffering in memory
+    useTempFiles : true,
+    tempFileDir : '/tmp/'
+  }));
+
+print_app.post('/upload', async function(req, res, next) {
+    // Was a file submitted?
+    if (!req.files || !req.files.file) {
+      return res.status(422).send('No files were uploaded');
+    }
+  
+    const uploadedFile = req.files.file;
+  
+    // Print information about the file to the console
+    console.log(`File Name: ${uploadedFile.name}`);
+  
+    // Return a web page showing information about the file
+    res.send(`Your file \"${uploadedFile.name}\" will now be printed.`);
+    uploadedFile.mv('./images/test.jpg')
+});
+uploaded_image = null;
 print_app.use('/favicon.ico', express.static('favicon.ico'));
 print_app.listen(print_port, () => {
     console.log(`print server is running on http://localhost:${print_port}`);
