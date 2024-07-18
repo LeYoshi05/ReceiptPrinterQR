@@ -6,15 +6,29 @@ const fileUpload = require('express-fileupload');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 
-
+// App
+// App - Creation and Configuration
 
 const app = express();
 const port = 3000;
-var con;
 
-connectToDatabase();
-createTokenTable()
-pushTokenToDB();
+const db = connectToDatabase()
+createTokenTable(db)
+pushTokenToDB(db);
+
+// define static assets
+app.use('/styles.css', express.static('styles/styles.css'));
+app.use('/favicon.ico', express.static('assets/favicon.ico'));
+app.use('/upload.css', express.static('styles/upload.css'));
+app.use('/printnow.css', express.static('styles/printnow.css'));
+app.use(fileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB size limit
+    useTempFiles : false // store on disk, not in memory
+}));
+
+app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
+
+// App - Endpoints
 
 key = "Hello, World!"
 url = `https://leghast.de/qr-code?key=${key}`
@@ -34,19 +48,6 @@ app.get('/', (req, res) => {
     });
 });
 
-// define static assets
-app.use('/styles.css', express.static('styles/styles.css'));
-app.use('/favicon.ico', express.static('assets/favicon.ico'));
-app.use('/upload.css', express.static('styles/upload.css'));
-app.use('/printnow.css', express.static('styles/printnow.css'));
-app.use(fileUpload({
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB size limit
-    useTempFiles : false // store on disk, not in memory
-}));
-
-
-app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
-
 app.get('/upload', async (req, res) => {
     const key = req.query.key;
 
@@ -62,21 +63,17 @@ app.get('/upload', async (req, res) => {
 
 app.post('/upload.js', async function(req, res, next) {
     // Was a file submitted?
-    if (!req.files || !req.files.file) {
-        return res.status(422).send('No files were uploaded');
-    }
+    if (!req.files || !req.files.file) { return res.status(422).send('No files were uploaded'); }
 
     const uploadedFile = req.files.file;
 
     // Extract the key from the referer header
     const referer = req.headers.referer;
-    console.log(referer)
+    console.log("Referer: ", referer)
     const refererUrl = new URL(referer);
     const key = refererUrl.searchParams.get('key');
 
-
-    console.log(refererUrl)
-    console.log(key)
+    console.log("Referer URL: ", refererUrl, " -> key: ", key)
 
     // Extrahieren der Dateiendung
     const originalExtension = uploadedFile.name.split('.').pop();
@@ -86,9 +83,7 @@ app.post('/upload.js', async function(req, res, next) {
 
     // Verschieben der Datei mit dem neuen Dateinamen
     uploadedFile.mv('./images/' + newFileName, function(err) {
-        if (err) {
-            return res.status(500).send(err);
-        }
+        if (err) { return res.status(500).send(err); }
 
         // Logik nach dem Verschieben der Datei
         console.log(`Datei wurde als ${newFileName} gespeichert.`);
@@ -97,62 +92,93 @@ app.post('/upload.js', async function(req, res, next) {
         let html = fs.readFileSync(path.join(__dirname, 'pages', 'printnow.html'), 'utf8');
         html = html.replace('{{fileName}}', uploadedFile.name);
         console.log(key);
-        useKey(key);
+        useKey(db, key);
         // Serve the modified printnow.html file
         res.send(html);
     });
 });
 
-uploaded_image = null;
+
+// Database
+// Database - Management
+
+function connectToDatabase() {
+    const loginData = fs.readFileSync('login_data.txt', 'utf8').split('\n');
+    const host = loginData[0].trim();
+    const user = loginData[1].trim();
+    const password = loginData[2].trim();
+
+    console.log(`Connecting to database at ${host} as user ${user}`);
+
+    const db = mysql.createConnection({
+        host: host,
+        user: user,
+        port: 3307,
+        password: password,
+        database: "qrtokens"
+    });
+
+    db.connect(function(err) {
+        if (err) throw err;
+        console.log("Connected!");
+    });
+
+    return db
+}
+
+function createTokenTable(db) {
+    var sql = fs.readFileSync(path.join(__dirname, "createTable.sql"), "utf-8")
+    db.query(sql, function (err, _) {
+        if(err) throw err
+        console.log("Token table created")
+    })
+}
+
+// Database - Queries
+
+function pushTokenToDB(db) {
+    token = createToken();
+    var sql = `INSERT INTO tokens (token) VALUES ('${token}')`;
+    db.query(sql, function (err, result) {
+        if (err) throw err;
+        console.log("Token inserted");
+    });
+}
 
 const interval = setInterval(async function() {
-    pushTokenToDB();
-    new_key = await getNewestToken();
+    pushTokenToDB(db);
+    new_key = await getNewestToken(db);
     console.log(new_key);
     url = `http://print.osvacneo.de:3000/?key=${new_key}`
-  }, 15000);
+}, 15000);
 
-function getNewestToken() {
+function getNewestToken(db) {
     return new Promise((resolve, reject) => {
         const sql = "SELECT token FROM tokens ORDER BY time_created DESC LIMIT 1";
-        con.query(sql, function (err, result) {
+        db.query(sql, function (err, result) {
             if (err) {
                 reject(err);
             } else {
-                if (result.length > 0) {
-                    resolve(result[0].token);
-                } else {
-                    resolve(null);
-                }
+                resolve(result.length > 0 ? result[0].token : null)
             }
         });
     });
 }
 
 async function isKeyValid(user_key){
-    uses = await getKeyUses(user_key);
-    if(uses > 0){
-        return true;
-    } else {
-        return false;
-    }
+    return await getKeyUses(db, user_key) > 0
 }
 
-function useKey(toUse){
+function useKey(db, toUse){
     console.log('using key' + toUse);
     const sql = "update tokens set uses = uses - 1 WHERE token=\'" + toUse + "\'";
-        con.query(sql, function (err, result) {
-            if (err) {
-                reject(err);
-            } else {
-            }
-        });
+    db.query(sql, (err, result) => { if (err) { reject(err) } });
 }
 
-function getKeyUses(user_key) {
+function getKeyUses(db, user_key) {
     return new Promise((resolve, reject) => {
         const sql = "SELECT uses FROM tokens WHERE token = \'" + user_key + "\'";
-        con.query(sql, function (err, result) {
+        db.query(sql, function (err, result) {
             if (err) {
                 reject(err);
             } else {
@@ -167,46 +193,8 @@ function getKeyUses(user_key) {
 }
 
 
-function connectToDatabase() {
-    const loginData = fs.readFileSync('login_data.txt', 'utf8').split('\n');
-    const host = loginData[0].trim();
-    const user = loginData[1].trim();
-    const password = loginData[2].trim();
+// Database - Helper
 
-    console.log(`Connecting to database at ${host} as user ${user}`);
-
-    con = mysql.createConnection({
-        host: host,
-        user: user,
-        port: 3307,
-        password: password,
-        database: "qrtokens"
-    });
-
-    con.connect(function(err) {
-        if (err) throw err;
-        console.log("Connected!");
-    });
-}
-
-function createToken() {
-    token = uuidv4();
-    return token;
-}
-
-function createTokenTable() {
-    var sql = fs.readFileSync(path.join(__dirname, "createTable.sql"), "utf-8")
-    con.query(sql, function (err, _) {
-        if(err) throw err
-        console.log("Token table created")
-    })
-}
-
-function pushTokenToDB() {
-    token = createToken();
-    var sql = `INSERT INTO tokens (token) VALUES ('${token}')`;
-    con.query(sql, function (err, result) {
-        if (err) throw err;
-        console.log("Token inserted");
-    });
+function createToken() {;
+    return uuidv4();
 }

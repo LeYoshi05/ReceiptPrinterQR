@@ -4,6 +4,7 @@
   "description": "a project to print stuff on a receipt printer",
   "main": "index.js",
   "scripts": {
+    "dev": "concurrently 'node index.js' 'python3 scripts/test.py'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

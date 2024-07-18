@@ -5,11 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bild hochladen</title>
   <link rel="stylesheet" href="upload.css">
+  <link rel="stylesheet" href="../styles/upload.css"> <!--for preview plugins-->
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
 <body>
 <div class="container">
   <h1>Bild hochladen</h1>
+  <!--
+  TODO: make this form a bit more fancy, including i.e. a bigger upload field
+  Another suggestion would be some upfront image of a receipt printer (without background) partly visible on the bottom of the page
+  -->
   <form action="/upload.js?key={{key}}" method="post" enctype="multipart/form-data">
     <input type="file" name="file" id="file" accept="image/*" required>
     <button type="submit">Hochladen</button>
