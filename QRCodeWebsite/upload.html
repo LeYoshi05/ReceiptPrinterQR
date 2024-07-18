@@ -10,7 +10,7 @@
 <body>
 <div class="container">
   <h1>Bild hochladen</h1>
-  <form action="/upload" method="post" enctype="multipart/form-data">
+  <form action="/upload?key={{key}}" method="post" enctype="multipart/form-data">
     <input type="file" name="file" id="file" accept="image/*" required>
     <button type="submit">Hochladen</button>
   </form>

@@ -30,7 +30,7 @@ app.get('/', (req, res) => {
                     <head>
                         <link rel="stylesheet" type="text/css" href="/styles.css"
                         <link rel="icon" type="image/x-icon" href="/favicon.ico">
-                        <meta http-equiv="refresh" content="5">
+                        <meta http-equiv="refresh" content="15">
                     </head>
                     <body>
                         <div class="head">
@@ -66,7 +66,9 @@ print_app.get('/', async (req, res) => {
 
     if (await isKeyValid(key)) {
         // Serve the upload.html file
-        res.sendFile(path.join(__dirname, 'upload.html'));
+        let html = fs.readFileSync(path.join(__dirname, 'upload.html'), 'utf8');
+        html = html.replace('{{key}}', key);
+        res.send(html);
     } else {
         res.send('Token invalid');
     }
@@ -90,13 +92,24 @@ print_app.post('/upload', async function(req, res, next) {
 
     const uploadedFile = req.files.file;
 
+    // Extract the key from the referer header
+    const referer = req.headers.referer;
+    console.log(referer)
+    const refererUrl = new URL(referer);
+    const key = refererUrl.searchParams.get('key');
+
+
+    console.log(refererUrl)
+    console.log(key)
+
     // Print information about the file to the console
     console.log(`File Name: ${uploadedFile.name}`);
 
     // Read the printnow.html file and replace the placeholder with the file name
     let html = fs.readFileSync(path.join(__dirname, 'printnow.html'), 'utf8');
     html = html.replace('{{fileName}}', uploadedFile.name);
-
+    console.log(key)
+    useKey(key);
     // Serve the modified printnow.html file
     res.send(html);
 
@@ -115,7 +128,7 @@ const interval = setInterval(async function() {
     new_key = await getNewestToken();
     console.log(new_key);
     url = `localhost:4242?key=${new_key}`
-  }, 5000);
+  }, 15000);
 
 function getNewestToken() {
     return new Promise((resolve, reject) => {
@@ -144,6 +157,7 @@ async function isKeyValid(user_key){
 }
 
 function useKey(toUse){
+    console.log('using key' + toUse);
     const sql = "update tokens set uses = uses - 1 WHERE token=\'" + toUse + "\'";
         con.query(sql, function (err, result) {
             if (err) {
