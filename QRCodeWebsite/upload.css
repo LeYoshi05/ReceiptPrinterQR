@@ -1,0 +1,55 @@
+/* Allgemeines Styling */
+body {
+    background-color: #222;
+    color: #eee;
+    font-family: sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+/* Styling für den Container */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+/* Styling für das Formular */
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 300px;
+}
+
+input[type="file"] {
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+label {
+    cursor: pointer;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}

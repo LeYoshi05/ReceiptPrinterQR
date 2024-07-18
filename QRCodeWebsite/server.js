@@ -62,35 +62,32 @@ const print_port = 4242;
 print_app.get('/', (req, res) => {
     const html = `
             <!DOCTYPE html>
-            <html>
-                <head>
-                    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-                </head>
-                <body>
-                    <p id="p1">Hello World!</p>
-    
-                    <div class="image-input">
-                        <form action="/upload" method="post" enctype="multipart/form-data">
-                            <input type="file" name="file" id="file" accept="image/*">
-                            <input type="submit" value="Upload">
-                        </form>
-                        <p id="invalid"></p>
-                    </div>
-    
-                    <script>
-                        const queryString = window.location.search;
-                        console.log(queryString);
-                        const urlParams = new URLSearchParams(queryString);
-    
-                        const key = urlParams.get('key')
-                        document.getElementById("p1").innerHTML = key;
-                    </script>
-                </body>
-            </html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bild hochladen</title>
+    <link rel="stylesheet" href="upload.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body>
+    <div class="container">
+        <h1>Bild hochladen</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" id="file" accept="image/*" required>
+            <button type="submit">Hochladen</button>
+        </form>
+    </div>
+
+    <script src="upload.js"></script>
+</body>
+</html>
+
         `;
     
     res.send(html);
 });
+print_app.use('/upload.css', express.static('upload.css'));
 
 print_app.use(fileUpload({
     // Configure file uploads with maximum file size 10MB
@@ -113,7 +110,7 @@ print_app.post('/upload', async function(req, res, next) {
   
     // Return a web page showing information about the file
     res.send(`Your file \"${uploadedFile.name}\" will now be printed.`);
-    uploadedFile.mv('./images/test.jpg')
+    uploadedFile.mv('./images/' + uuidv4() + '.jpg')
 });
 uploaded_image = null;
 print_app.use('/favicon.ico', express.static('favicon.ico'));
