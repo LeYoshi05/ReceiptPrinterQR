@@ -12,7 +12,7 @@ var con;
 connectToDatabase();
 pushTokenToDB();
 
-key = "Test"
+key = "Hello, World!"
 url = `https://leghast.de/qr-code?key=${key}`
 app.get('/', (req, res) => {
     // Generate a random QR code
@@ -54,10 +54,29 @@ app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
 
-const interval = setInterval(function() {
-    url = Math.floor(Math.random() * 6164697).toString();
-    console.log(url);
+const interval = setInterval(async function() {
+    pushTokenToDB();
+    new_key = await getNewestToken();
+    console.log(new_key);
+    url = `localhost:4242?key=${new_key}`
   }, 5000);
+
+function getNewestToken() {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT token FROM tokens ORDER BY time_created DESC LIMIT 1";
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                if (result.length > 0) {
+                    resolve(result[0].token);
+                } else {
+                    resolve(null);
+                }
+            }
+        });
+    });
+}
 
 
 function connectToDatabase() {
