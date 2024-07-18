@@ -1,4 +1,21 @@
 {
+  "name": "qrcodewebsite",
+  "version": "1.0.0",
+  "description": "a project to print stuff on a receipt printer",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeYoshi05/ReceiptPrinterQR.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LeYoshi05/ReceiptPrinterQR/issues"
+  },
+  "homepage": "https://github.com/LeYoshi05/ReceiptPrinterQR#readme",
   "dependencies": {
     "express": "^4.19.2",
     "fs": "^0.0.1-security",
