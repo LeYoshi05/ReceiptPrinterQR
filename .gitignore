@@ -3,3 +3,5 @@
 /db_data/
 /QRCodeWebsite/images/
 /node_modules/
+
+.DS_Store

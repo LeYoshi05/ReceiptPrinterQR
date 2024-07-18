@@ -20,6 +20,10 @@
     "express": "^4.19.2",
     "fs": "^0.0.1-security",
     "mysql": "^2.18.1",
-    "qrcode": "^1.5.3"
+    "qrcode": "^1.5.3",
+    "concurrently": "^8.2.2",
+    "express-fileupload": "^1.5.1",
+    "uuid": "^10.0.0", 
+    "path": "^0.12.7"
   }
 }

@@ -4,6 +4,8 @@ const mysql = require('mysql');
 const fs = require('fs');
 const fileUpload = require('express-fileupload');
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
+
 
 
 const app = express();
@@ -24,65 +26,46 @@ app.get('/', (req, res) => {
             res.status(500).send('Internal Server Error');
         } else {
             // Serve the website with the QR code and CSS stylesheet
-            const html = `
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                        <link rel="stylesheet" type="text/css" href="/styles.css"
-                        <link rel="icon" type="image/x-icon" href="/favicon.ico">
-                        <meta http-equiv="refresh" content="15">
-                    </head>
-                    <body>
-                        <div class="head">
-                            <h1>Bondruck</h1>
-                        </div>
-                        <div class="content">
-                            <p>QR Code scannen, um etwas auf dem Bondrucker auszudrucken</p>
-                        </div>
-                        <div class="qr-code">
-                        <img class="qrcode" src="${qrCode}" alt="QR Code">
-                        </div>
-                    </body>
-                </html>
-            `;
+            const html = fs.readFileSync(path.join(__dirname, "pages/qrcode.html"));
+            html.replace("{{qrCode}}", qrCode)
             res.send(html);
         }
     });
 });
-app.use('/styles.css', express.static('styles.css'));
-app.use('/favicon.ico', express.static('favicon.ico'));
-app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
-});
+
+// define static assets
+app.use('/styles.css', express.static('styles/styles.css'));
+app.use('/favicon.ico', express.static('assets/favicon.ico'));
+
+app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
 
 
 
 const print_app = express();
 const print_port = 4242;
-const path = require('path');
+
+
+// define static assets and configuration
+print_app.use('/upload.css', express.static('styles/upload.css'));
+print_app.use('/printnow.css', express.static('styles/printnow.css'));
+print_app.use('/favicon.ico', express.static('assets/favicon.ico'));
+print_app.use(fileUpload({
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB size limit
+    useTempFiles : false // store on disk, not in memory
+}));
 
 print_app.get('/', async (req, res) => {
     const key = req.query.key;
 
     if (await isKeyValid(key)) {
         // Serve the upload.html file
-        let html = fs.readFileSync(path.join(__dirname, 'upload.html'), 'utf8');
+        let html = fs.readFileSync(path.join(__dirname, 'pages/upload.html'), 'utf8');
         html = html.replace('{{key}}', key);
         res.send(html);
     } else {
         res.send('Token invalid');
     }
 });
-
-print_app.use('/upload.css', express.static('upload.css'));
-
-print_app.use(fileUpload({
-    // Configure file uploads with maximum file size 10MB
-    limits: { fileSize: 10 * 1024 * 1024 },
-  
-    // Temporarily store uploaded files to disk, rather than buffering in memory
-    useTempFiles : false
-  }));
 
 print_app.post('/upload', async function(req, res, next) {
     // Was a file submitted?
@@ -105,10 +88,10 @@ print_app.post('/upload', async function(req, res, next) {
     // Extrahieren der Dateiendung
     const originalExtension = uploadedFile.name.split('.').pop();
 
-// Überprüfen der Länge der Dateiendung und Generieren des neuen Dateinamens
+    // Überprüfen der Länge der Dateiendung und Generieren des neuen Dateinamens
     const newFileName = uuidv4() + (originalExtension.length <= 5 ? '.' + originalExtension : '');
 
-// Verschieben der Datei mit dem neuen Dateinamen
+    // Verschieben der Datei mit dem neuen Dateinamen
     uploadedFile.mv('./images/' + newFileName, function(err) {
         if (err) {
             return res.status(500).send(err);
@@ -118,7 +101,7 @@ print_app.post('/upload', async function(req, res, next) {
         console.log(`Datei wurde als ${newFileName} gespeichert.`);
 
         // Aktualisieren Sie die HTML-Ausgabe, um den neuen Dateinamen zu verwenden, falls erforderlich
-        let html = fs.readFileSync(path.join(__dirname, 'printnow.html'), 'utf8');
+        let html = fs.readFileSync(path.join(__dirname, 'pages/printnow.html'), 'utf8');
         html = html.replace('{{fileName}}', uploadedFile.name);
         console.log(key);
         useKey(key);
@@ -126,13 +109,9 @@ print_app.post('/upload', async function(req, res, next) {
         res.send(html);
     });
 });
-print_app.use('/printnow.css', express.static('printnow.css'));
-uploaded_image = null;
-print_app.use('/favicon.ico', express.static('favicon.ico'));
-print_app.listen(print_port, () => {
-    console.log(`print server is running on http://localhost:${print_port}`);
-});
 
+uploaded_image = null;
+print_app.listen(print_port, () => console.log(`print server is running on http://localhost:${print_port}`));
 
 const interval = setInterval(async function() {
     pushTokenToDB();
