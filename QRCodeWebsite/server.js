@@ -61,32 +61,34 @@ const print_app = express();
 const print_port = 4242;
 print_app.get('/', (req, res) => {
     const html = `
-        <!DOCTYPE html>
-        <html>
-            <head>
-                <link rel="icon" type="image/x-icon" href="/favicon.ico">
-            </head>
-            <body>
-                <p id="p1">Hello World!</p>
-
-                <div class="image-input">
-                    <form action="/upload" method="post" enctype="multipart/form-data">
-                        <input type="file" name="file" id="file" accept="image/*">
-                        <input type="submit" value="Upload">
-                    </form>
-                </div>
-
-                <script>
-                    const queryString = window.location.search;
-                    console.log(queryString);
-                    const urlParams = new URLSearchParams(queryString);
-
-                    const key = urlParams.get('key')
-                    document.getElementById("p1").innerHTML = key;
-                </script>
-            </body>
-        </html>
-    `;
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+                </head>
+                <body>
+                    <p id="p1">Hello World!</p>
+    
+                    <div class="image-input">
+                        <form action="/upload" method="post" enctype="multipart/form-data">
+                            <input type="file" name="file" id="file" accept="image/*">
+                            <input type="submit" value="Upload">
+                        </form>
+                        <p id="invalid"></p>
+                    </div>
+    
+                    <script>
+                        const queryString = window.location.search;
+                        console.log(queryString);
+                        const urlParams = new URLSearchParams(queryString);
+    
+                        const key = urlParams.get('key')
+                        document.getElementById("p1").innerHTML = key;
+                    </script>
+                </body>
+            </html>
+        `;
+    
     res.send(html);
 });
 
@@ -95,8 +97,7 @@ print_app.use(fileUpload({
     limits: { fileSize: 10 * 1024 * 1024 },
   
     // Temporarily store uploaded files to disk, rather than buffering in memory
-    useTempFiles : true,
-    tempFileDir : '/tmp/'
+    useTempFiles : false
   }));
 
 print_app.post('/upload', async function(req, res, next) {
@@ -137,6 +138,42 @@ function getNewestToken() {
             } else {
                 if (result.length > 0) {
                     resolve(result[0].token);
+                } else {
+                    resolve(null);
+                }
+            }
+        });
+    });
+}
+
+async function isKeyValid(user_key){
+    uses = await getKeyUses(user_key);
+    if(uses > 0){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function useKey(toUse){
+    const sql = "update tokens set uses = uses - 1 WHERE token=\'" + toUse + "\'";
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+            }
+        });
+}
+
+function getKeyUses(user_key) {
+    return new Promise((resolve, reject) => {
+        const sql = "SELECT uses FROM tokens WHERE token = \'" + user_key + "\'";
+        con.query(sql, function (err, result) {
+            if (err) {
+                reject(err);
+            } else {
+                if (result.length > 0) {
+                    resolve(result[0].uses);
                 } else {
                     resolve(null);
                 }
