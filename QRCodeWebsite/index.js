@@ -37,25 +37,17 @@ app.get('/', (req, res) => {
 // define static assets
 app.use('/styles.css', express.static('styles/styles.css'));
 app.use('/favicon.ico', express.static('assets/favicon.ico'));
-
-app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
-
-
-
-const print_app = express();
-const print_port = 4242;
-
-
-// define static assets and configuration
-print_app.use('/upload.css', express.static('styles/upload.css'));
-print_app.use('/printnow.css', express.static('styles/printnow.css'));
-print_app.use('/favicon.ico', express.static('assets/favicon.ico'));
-print_app.use(fileUpload({
+app.use('/upload.css', express.static('styles/upload.css'));
+app.use('/printnow.css', express.static('styles/printnow.css'));
+app.use(fileUpload({
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB size limit
     useTempFiles : false // store on disk, not in memory
 }));
 
-print_app.get('/', async (req, res) => {
+
+app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
+
+app.get('/upload', async (req, res) => {
     const key = req.query.key;
 
     if (await isKeyValid(key)) {
@@ -68,7 +60,7 @@ print_app.get('/', async (req, res) => {
     }
 });
 
-print_app.post('/upload', async function(req, res, next) {
+app.post('/upload.js', async function(req, res, next) {
     // Was a file submitted?
     if (!req.files || !req.files.file) {
         return res.status(422).send('No files were uploaded');
@@ -112,13 +104,12 @@ print_app.post('/upload', async function(req, res, next) {
 });
 
 uploaded_image = null;
-print_app.listen(print_port, () => console.log(`print server is running on http://localhost:${print_port}`));
 
 const interval = setInterval(async function() {
     pushTokenToDB();
     new_key = await getNewestToken();
     console.log(new_key);
-    url = `http://print.osvacneo.de:4242/?key=${new_key}`
+    url = `http://print.osvacneo.de:3000/?key=${new_key}`
   }, 15000);
 
 function getNewestToken() {
@@ -205,7 +196,6 @@ function createToken() {
 
 function createTokenTable() {
     var sql = fs.readFileSync(path.join(__dirname, "createTable.sql"), "utf-8")
-    console.log(sql)
     con.query(sql, function (err, _) {
         if(err) throw err
         console.log("Token table created")
