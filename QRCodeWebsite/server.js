@@ -194,6 +194,7 @@ function connectToDatabase() {
     con = mysql.createConnection({
         host: host,
         user: user,
+        port: 3307,
         password: password,
         database: "qrtokens"
     });

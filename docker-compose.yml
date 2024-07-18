@@ -5,7 +5,7 @@ services:
     image: mariadb:latest  # Offizielles MariaDB-Image
     restart: always        # Container bei Neustart automatisch starten
     ports:
-      - 3306:3306
+      - 3307:3306
     environment:
       MYSQL_ROOT_PASSWORD: dein_sicheres_passwort  # Sicheres Passwort setzen
       MYSQL_DATABASE: qrtokens              # Datenbank erstellen
