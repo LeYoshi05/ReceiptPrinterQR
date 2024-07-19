@@ -148,8 +148,14 @@ function pushTokenToDB(db) {
     });
 }
 
+function deleteOldTokens(db) {
+    const sql2 = "DELETE FROM `tokens` WHERE `time_created` < (CURRENT_TIMESTAMP - 60*5)";
+    db.query(sql2, (err, result) => { if (err) { reject(err) } });
+}
+
 const interval = setInterval(async function() {
     pushTokenToDB(db);
+    deleteOldTokens(db);
     new_key = await getNewestToken(db);
     console.log(new_key);
     url = `http://print.osvacneo.de:4242/?key=${new_key}`
