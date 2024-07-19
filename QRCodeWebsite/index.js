@@ -34,7 +34,7 @@ print_app.listen(print_port, () => console.log(`Server is running on http://loca
 // App - Endpoints
 
 key = "Hello, World!"
-url = `https://leghast.de/qr-code?key=${key}`
+url = `http://print.osvacneo.de:4242/?key=${key}`
 app.get('/', (req, res) => {
     // Generate a random QR code
     
