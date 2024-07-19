@@ -10,7 +10,9 @@ const path = require('path');
 // App - Creation and Configuration
 
 const app = express();
+const print_app = express();
 const port = 3000;
+const print_port = 4242;
 
 const db = connectToDatabase()
 createTokenTable(db)
@@ -19,14 +21,15 @@ pushTokenToDB(db);
 // define static assets
 app.use('/styles.css', express.static('styles/styles.css'));
 app.use('/favicon.ico', express.static('assets/favicon.ico'));
-app.use('/upload.css', express.static('styles/upload.css'));
-app.use('/printnow.css', express.static('styles/printnow.css'));
-app.use(fileUpload({
+print_app.use('/upload.css', express.static('styles/upload.css'));
+print_app.use('/printnow.css', express.static('styles/printnow.css'));
+print_app.use(fileUpload({
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB size limit
     useTempFiles : false // store on disk, not in memory
 }));
 
 app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
+print_app.listen(print_port, () => console.log(`Server is running on http://localhost:${print_port}`));
 
 // App - Endpoints
 
@@ -48,7 +51,7 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/upload', async (req, res) => {
+print_app.get('/', async (req, res) => {
     const key = req.query.key;
 
     if (await isKeyValid(key)) {
@@ -61,7 +64,7 @@ app.get('/upload', async (req, res) => {
     }
 });
 
-app.post('/upload.js', async function(req, res, next) {
+print_app.post('/upload', async function(req, res, next) {
     // Was a file submitted?
     if (!req.files || !req.files.file) { return res.status(422).send('No files were uploaded'); }
 
@@ -149,7 +152,7 @@ const interval = setInterval(async function() {
     pushTokenToDB(db);
     new_key = await getNewestToken(db);
     console.log(new_key);
-    url = `http://print.osvacneo.de:3000/?key=${new_key}`
+    url = `http://print.osvacneo.de:4242/?key=${new_key}`
 }, 15000);
 
 function getNewestToken(db) {
