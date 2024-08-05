@@ -88,7 +88,6 @@ print_app.post('/upload', async function(req, res, next) {
     let valid = await isKeyValid(key)
     console.log(valid)
     if(valid){
-        print("Method called while \'valid\' is " + valid)
         useKey(db,key)
         uploadedFile.mv('./images/' + newFileName, function(err) {
             if (err) { return res.status(500).send(err); }
