@@ -85,20 +85,30 @@ print_app.post('/upload', async function(req, res, next) {
     const newFileName = uuidv4() + (originalExtension.length <= 5 ? '.' + originalExtension : '');
 
     // Verschieben der Datei mit dem neuen Dateinamen
-    uploadedFile.mv('./images/' + newFileName, function(err) {
-        if (err) { return res.status(500).send(err); }
+    let valid = await isKeyValid(key)
+    console.log(valid)
+    if(valid){
+        print("Method called while \'valid\' is " + valid)
+        useKey(db,key)
+        uploadedFile.mv('./images/' + newFileName, function(err) {
+            if (err) { return res.status(500).send(err); }
 
-        // Logik nach dem Verschieben der Datei
-        console.log(`Datei wurde als ${newFileName} gespeichert.`);
+            // Logik nach dem Verschieben der Datei
+            console.log(`Datei wurde als ${newFileName} gespeichert.`);
 
-        // Aktualisieren Sie die HTML-Ausgabe, um den neuen Dateinamen zu verwenden, falls erforderlich
-        let html = fs.readFileSync(path.join(__dirname, 'pages', 'printnow.html'), 'utf8');
-        html = html.replace('{{fileName}}', uploadedFile.name);
-        console.log(key);
-        useKey(db, key);
-        // Serve the modified printnow.html file
+            // Aktualisieren Sie die HTML-Ausgabe, um den neuen Dateinamen zu verwenden, falls erforderlich
+            let html = fs.readFileSync(path.join(__dirname, 'pages', 'printnow.html'), 'utf8');
+            html = html.replace('{{fileName}}', uploadedFile.name);
+            console.log(key);
+            // Serve the modified printnow.html file
+            res.send(html);
+        });
+    }
+    else{
+        let html = fs.readFileSync(path.join(__dirname, 'pages', 'noprint.html'), 'utf8');
+            html = html.replace('{{fileName}}', uploadedFile.name);
         res.send(html);
-    });
+    }
 });
 
 
@@ -175,7 +185,8 @@ function getNewestToken(db) {
 }
 
 async function isKeyValid(user_key){
-    return await getKeyUses(db, user_key) > 0
+    remainingUses = await getKeyUses(db, user_key)
+    return remainingUses != null && remainingUses > 0
 }
 
 function useKey(db, toUse){
