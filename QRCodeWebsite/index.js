@@ -5,6 +5,7 @@ const fs = require('fs');
 const fileUpload = require('express-fileupload');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
+const { Console } = require('console');
 
 // App
 // App - Creation and Configuration
@@ -127,7 +128,8 @@ function connectToDatabase() {
         user: user,
         port: 3307,
         password: password,
-        database: "qrtokens"
+        database: "qrtokens",
+        multipleStatements: false
     });
 
     db.connect(function(err) {
@@ -184,19 +186,28 @@ function getNewestToken(db) {
 }
 
 async function isKeyValid(user_key){
-    remainingUses = await getKeyUses(db, user_key)
+    remainingUses = 0
+    if(isUUID(user_key)){
+        remainingUses = await getKeyUses(db, user_key)
+    }
     return remainingUses != null && remainingUses > 0
 }
 
 function useKey(db, toUse){
-    console.log('using key' + toUse);
-    const sql = "update tokens set uses = uses - 1 WHERE token=\'" + toUse + "\'";
-    db.query(sql, (err, result) => { if (err) { reject(err) } });
+    console.log('Attempting to use key ' + toUse);
+    if(isUUID(user_Key)){
+        const sql = "update tokens set uses = uses - 1 WHERE token=\'" + toUse + "\'";
+        db.query(sql, (err, result) => { if (err) { reject(err) } });
+        console.log("Success! The key " + toUse + "was used successfully.")
+    }else{
+        print("The key was not used, as it did not match a valid UUID.")
+    }
 }
 
 function getKeyUses(db, user_key) {
     return new Promise((resolve, reject) => {
         const sql = "SELECT uses FROM tokens WHERE token = \'" + user_key + "\'";
+        console.log("The sql query " + sql + " was executed.")
         db.query(sql, function (err, result) {
             if (err) {
                 reject(err);
@@ -216,4 +227,9 @@ function getKeyUses(db, user_key) {
 
 function createToken() {;
     return uuidv4();
+}
+
+function isUUID(input) {
+    let regex = /[A-Fa-f0-9]+-[A-Fa-f0-9]+-[A-Fa-f0-9]+-[A-Fa-f0-9]+-[A-Fa-f0-9]+/i;
+    return regex.test(input);
 }
