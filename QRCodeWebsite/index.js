@@ -25,7 +25,7 @@ app.use('/favicon.ico', express.static('assets/favicon.ico'));
 print_app.use('/upload.css', express.static('styles/upload.css'));
 print_app.use('/printnow.css', express.static('styles/printnow.css'));
 print_app.use(fileUpload({
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB size limit
+    limits: { fileSize: 10 * 1024 * 1024}, // 10MB size limit
     useTempFiles : false // store on disk, not in memory
 }));
 
@@ -88,22 +88,26 @@ print_app.post('/upload', async function(req, res, next) {
 
     // Verschieben der Datei mit dem neuen Dateinamen
     let valid = await isKeyValid(key)
-    console.log(valid)
     if(valid){
-        useKey(db,key)
-        uploadedFile.mv('./images/' + newFileName, function(err) {
-            if (err) { return res.status(500).send(err); }
-
-            // Logik nach dem Verschieben der Datei
-            console.log(`Datei wurde als ${newFileName} gespeichert.`);
-
-            // Aktualisieren Sie die HTML-Ausgabe, um den neuen Dateinamen zu verwenden, falls erforderlich
-            let html = fs.readFileSync(path.join(__dirname, 'pages', 'printnow.html'), 'utf8');
-            html = html.replace('{{fileName}}', uploadedFile.name);
-            console.log(key);
-            // Serve the modified printnow.html file
+        if(uploadedFile.size >= 10 * 1024 * 1024){
+            let html = fs.readFileSync(path.join(__dirname, 'pages', 'fileTooLarge.html'), 'utf8');
             res.send(html);
-        });
+        }else{
+            useKey(db,key)
+            uploadedFile.mv('./images/' + newFileName, function(err) {
+                if (err) { return res.status(500).send(err); }
+
+                // Logik nach dem Verschieben der Datei
+                console.log(`Datei wurde als ${newFileName} gespeichert.`);
+
+                // Aktualisieren Sie die HTML-Ausgabe, um den neuen Dateinamen zu verwenden, falls erforderlich
+                let html = fs.readFileSync(path.join(__dirname, 'pages', 'printnow.html'), 'utf8');
+                html = html.replace('{{fileName}}', uploadedFile.name);
+                console.log(key);
+                // Serve the modified printnow.html file
+                res.send(html);
+            });
+        }
     }
     else{
         let html = fs.readFileSync(path.join(__dirname, 'pages', 'noprint.html'), 'utf8');
@@ -196,7 +200,7 @@ async function isKeyValid(user_key){
 
 function useKey(db, toUse){
     console.log('Attempting to use key ' + toUse);
-    if(isUUID(user_Key)){
+    if(isUUID(toUse)){
         const sql = "update tokens set uses = uses - 1 WHERE token=\'" + toUse + "\'";
         db.query(sql, (err, result) => { if (err) { reject(err) } });
         console.log("Success! The key " + toUse + "was used successfully.")
