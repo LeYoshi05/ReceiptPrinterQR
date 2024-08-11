@@ -61,7 +61,8 @@ print_app.get('/', async (req, res) => {
         html = html.replace('{{key}}', key);
         res.send(html);
     } else {
-        res.send('Token invalid');
+        let html = fs.readFileSync(path.join(__dirname, 'pages', 'invalidToken.html'), 'utf8');
+        res.send(html);
     }
 });
 
