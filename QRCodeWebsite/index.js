@@ -157,8 +157,8 @@ function createTokenTable(db) {
 
 function pushTokenToDB(db) {
     token = createToken();
-    var sql = `INSERT INTO tokens (token) VALUES ('${token}')`;
-    db.query(sql, function (err, result) {
+    var sql = `INSERT INTO tokens (token) VALUES (?)`;
+    db.query(sql, [token], function (err, result) {
         if (err) throw err;
         console.log("Token inserted");
     });
@@ -201,19 +201,18 @@ async function isKeyValid(user_key){
 function useKey(db, toUse){
     console.log('Attempting to use key ' + toUse);
     if(isUUID(toUse)){
-        const sql = "update tokens set uses = uses - 1 WHERE token=\'" + toUse + "\'";
-        db.query(sql, (err, result) => { if (err) { reject(err) } });
+        const sql = "update tokens set uses = uses - 1 WHERE token = ?";
+        db.query(sql, [toUse], (err, result) => { if (err) { reject(err) } });
         console.log("Success! The key " + toUse + "was used successfully.")
     }else{
-        print("The key was not used, as it did not match a valid UUID.")
+        print("The key was not used, it did not match a valid UUID.")
     }
 }
 
 function getKeyUses(db, user_key) {
     return new Promise((resolve, reject) => {
-        const sql = "SELECT uses FROM tokens WHERE token = \'" + user_key + "\'";
-        console.log("The sql query " + sql + " was executed.")
-        db.query(sql, function (err, result) {
+        const sql = "SELECT uses FROM tokens WHERE token = ?";
+        db.query(sql, [user_key], function (err, result) {
             if (err) {
                 reject(err);
             } else {
