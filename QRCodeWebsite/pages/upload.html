@@ -19,8 +19,10 @@
   ...or ignore this consequently! ~yoshi
   -->
   <form action="/upload?key={{key}}" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" id="file" accept="image/*, .pdf, .doc, .docx" required>
-    <button type="submit">Hochladen</button>
+    <div class="upload-container">
+      <input type="file" name="file" id="file" accept="image/*, .pdf, .doc, .docx" required>
+    </div>
+    <button type="submit" style="background-color: #00ca28; color: #fff; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Hochladen</button>
   </form>
 </div>
 
