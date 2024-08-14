@@ -23,6 +23,7 @@
     "express-fileupload": "^1.5.1",
     "fs": "^0.0.1-security",
     "mysql": "^2.18.1",
+    "package.json": "^2.0.1",
     "path": "^0.12.7",
     "qrcode": "^1.5.3",
     "qrcodewebsite": "file:",
