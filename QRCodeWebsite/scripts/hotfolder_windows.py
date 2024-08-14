@@ -1,10 +1,11 @@
 import os
 import time
+import subprocess
 from PIL import Image
 
 # Verzeichnis für Bilder definieren
 bilder_verzeichnis = "images"
-irfanview_path = "\"C:\\Program Files\\IrfanView\\i_view64.exe\""
+irfanview_path = r"C:\Program Files\IrfanView\i_view64.exe"
 printer_name = "EPSON TM-T20III Receipt"
 max_width, max_height = 203, 203
 
@@ -31,9 +32,9 @@ while True:
                     new_width = int(new_height * aspect_ratio)
 
             # IrfanView-Befehl ausführen
-            command = f'{irfanview_path} {bild_pfad} /resize=({new_width},{new_height}) /print="{printer_name}"'
-            print("DEBUG: ",command)
-            os.system(command)
+            command = [irfanview_path, bild_pfad, f"/resize=({new_width},{new_height})", f"/print={printer_name}"]
+            print("DEBUG: ", " ".join(command))
+            subprocess.run(command, shell=True)
 
             # Bilddatei löschen
             os.remove(bild_pfad)
