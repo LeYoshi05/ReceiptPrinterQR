@@ -7,7 +7,7 @@ from PIL import Image
 bilder_verzeichnis = "images"
 irfanview_path = r"C:\Program Files\IrfanView\i_view64.exe"
 printer_name = "EPSON TM-T20III Receipt"
-max_width, max_height = 203, 203
+max_width, max_height = 640, 1280
 
 while True:
     # Liste aller Dateien im Verzeichnis erhalten
@@ -24,14 +24,40 @@ while True:
                 width, height = img.size
                 aspect_ratio = width / height
 
-                if width > height:
-                    new_width = min(max_width, width)
-                    new_height = int(new_width / aspect_ratio)
-                else:
-                    new_height = min(max_height, height)
-                    new_width = int(new_height * aspect_ratio)
+                if width <= max_width and height <= max_width:
+                    print("Bild ist kleiner als die maximale Größe. Version 1")
+                    if width > height:
+                        new_width = max_width
+                        new_height = int(new_width / aspect_ratio)
+                    else:
+                        new_height = max_width
+                        new_width = int(new_height * aspect_ratio)
 
-            # IrfanView-Befehl ausführen
+
+                elif width > max_width or height > max_width:
+                    print("Bild ist größer als die maximale Größe. Version 2")
+                    if width > max_width and height <= max_height:
+                        new_width = max_width
+                        new_height = int(new_width / aspect_ratio)
+                    elif height > max_width and width <= max_height:
+                        new_height = max_width
+                        new_width = int(new_height * aspect_ratio)
+                    else:
+                        print("Bild ist größer als die maximale Größe in beiden Dimensionen. Version 3")
+                        if width < height:
+                            new_width = max_width
+                            new_height = int(new_width / aspect_ratio)
+                            if new_height > max_height:
+                                new_height = max_height
+                                new_width = int(new_height * aspect_ratio)
+                        else:
+                            new_height = max_width
+                            new_width = int(new_height * aspect_ratio)
+                            if new_width > max_height:
+                                new_width = max_height
+                                new_height = int(new_width / aspect_ratio)
+
+            # Bild drucken
             command = [irfanview_path, bild_pfad, f"/resize=({new_width},{new_height})", f"/print={printer_name}"]
             print("DEBUG: ", " ".join(command))
             subprocess.run(command, shell=True)
