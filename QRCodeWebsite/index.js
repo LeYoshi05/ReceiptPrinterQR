@@ -37,7 +37,7 @@ print_app.listen(print_port, () => console.log(`Server is running on http://loca
 // App - Endpoints
 
 key = "Hello, World!"
-url = `http://print.osvacneo.de:4242/?key=${key}`
+url = `http://print.osvacneo.de/?key=${key}`
 app.get('/', (req, res) => {
     // Generate a random QR code
     
@@ -176,7 +176,7 @@ const interval = setInterval(async function() {
     deleteOldTokens(db);
     new_key = await getNewestToken(db);
     console.log(new_key);
-    url = `http://print.osvacneo.de:4242/?key=${new_key}`
+    url = `http://print.osvacneo.de/?key=${new_key}`
 }, 15000);
 
 function getNewestToken(db) {
