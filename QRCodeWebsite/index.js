@@ -15,6 +15,8 @@ const print_app = express();
 const port = 3000;
 const print_port = 4242;
 
+const maxFileSize = 10*1024*1024
+
 const db = connectToDatabase()
 createTokenTable(db)
 pushTokenToDB(db);
@@ -25,7 +27,7 @@ app.use('/favicon.ico', express.static('assets/favicon.ico'));
 print_app.use('/upload.css', express.static('styles/upload.css'));
 print_app.use('/printnow.css', express.static('styles/printnow.css'));
 print_app.use(fileUpload({
-    limits: { fileSize: 10 * 1024 * 1024}, // 10MB size limit
+    limits: { fileSize: maxFileSize}, // 10MB size limit
     useTempFiles : false // store on disk, not in memory
 }));
 
@@ -89,7 +91,7 @@ print_app.post('/upload', async function(req, res, next) {
     // Verschieben der Datei mit dem neuen Dateinamen
     let valid = await isKeyValid(key)
     if(valid){
-        if(uploadedFile.size >= 10 * 1024 * 1024){
+        if(uploadedFile.size >= maxFileSize){
             let html = fs.readFileSync(path.join(__dirname, 'pages', 'fileTooLarge.html'), 'utf8');
             res.send(html);
         }else{
