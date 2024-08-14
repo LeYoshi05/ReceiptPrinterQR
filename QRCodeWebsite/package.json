@@ -18,13 +18,14 @@
   },
   "homepage": "https://github.com/LeYoshi05/ReceiptPrinterQR#readme",
   "dependencies": {
+    "concurrently": "^8.2.2",
     "express": "^4.19.2",
+    "express-fileupload": "^1.5.1",
     "fs": "^0.0.1-security",
     "mysql": "^2.18.1",
+    "path": "^0.12.7",
     "qrcode": "^1.5.3",
-    "concurrently": "^8.2.2",
-    "express-fileupload": "^1.5.1",
-    "uuid": "^10.0.0", 
-    "path": "^0.12.7"
+    "qrcodewebsite": "file:",
+    "uuid": "^10.0.0"
   }
 }

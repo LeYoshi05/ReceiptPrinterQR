@@ -14,7 +14,7 @@ while True:
     # Jedes Bild im Verzeichnis drucken und löschen
     for datei in dateien:
       bild_pfad = os.path.join(bilder_verzeichnis, datei)
-      subprocess.run(["lpr", "-P", "EPSON_TM-T20III", bild_pfad])
+      os.startfile(bild_pfad, "print")
       os.remove(bild_pfad)
       print(f"Bild {datei} gedruckt und gelöscht.")
 
