@@ -20,3 +20,9 @@ p {
 .design_element {
     border: 4px solid #38b000;
 }
+
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
