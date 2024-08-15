@@ -7,12 +7,16 @@ The QR code redirects the user to a website that allows the user to choose a fil
 ## Setup:
 - Own an Epson TM-T20III thermal receipt printer (or similar, not tested.)
 - Change the URL in index.js to your own url
-- 
+- install NodeJS
+- install Python 3
+- run npm install in the QRCodeWebsite folder
+- run pip install -r requirements.txt in the QRCodeWebsite folder
 
 ## Usage:
-- Start hotfolder.py
+- Open a terminal in the QRCodeWebsite folder
+- Start hotfolder.py or hotfolder_windows.py using python /scripts/hotfolder(_windows).py
 - run docker-compose up
-- Start index.js
+- Start index.js using node index.js
 
 
 ### Basic technical drawing
