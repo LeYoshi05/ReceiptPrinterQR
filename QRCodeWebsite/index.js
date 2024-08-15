@@ -15,7 +15,7 @@ const print_app = express();
 const port = 3000;
 const print_port = 4242;
 
-const maxFileSize = 10*1024*1024
+const maxFileSize = 10 * 1024 * 1024
 
 const db = connectToDatabase()
 createTokenTable(db)
@@ -30,8 +30,8 @@ print_app.use('/printnow.css', express.static('styles/printnow.css'));
 print_app.use('/stand_standpunkt.png', express.static('assets/stand_standpunkt.png'));
 print_app.use('/standpunkt.css', express.static('styles/standpunkt.css'));
 print_app.use(fileUpload({
-    limits: { fileSize: maxFileSize}, // 10MB size limit
-    useTempFiles : false // store on disk, not in memory
+    limits: { fileSize: maxFileSize }, // 10MB size limit
+    useTempFiles: false // store on disk, not in memory
 }));
 
 app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
@@ -43,7 +43,7 @@ key = "Hello, World!"
 url = `http://print.osvacneo.de/?key=${key}`
 app.get('/', (req, res) => {
     // Generate a random QR code
-    
+
     qr.toDataURL(url, (err, qrCode) => {
         if (err) {
             console.error(err);
@@ -74,7 +74,7 @@ print_app.get('/', async (req, res) => {
     }
 });
 
-print_app.post('/upload', async function(req, res, next) {
+print_app.post('/upload', async function (req, res, next) {
     // Was a file submitted?
     if (!req.files || !req.files.file) { return res.status(422).send('No files were uploaded'); }
 
@@ -96,15 +96,14 @@ print_app.post('/upload', async function(req, res, next) {
 
     // Verschieben der Datei mit dem neuen Dateinamen
     let valid = await isKeyValid(key)
-    if(valid){
-        if(uploadedFile.size >= maxFileSize){
+    if (valid) {
+        if (uploadedFile.size >= maxFileSize) {
             let html = fs.readFileSync(path.join(__dirname, 'pages', 'fileTooLarge.html'), 'utf8');
             res.send(html);
-        }else{
-            useKey(db,key)
-            uploadedFile.mv('./images/' + newFileName, function(err) {
+        } else {
+            useKey(db, key)
+            uploadedFile.mv('./images/' + newFileName, function (err) {
                 if (err) { return res.status(500).send(err); }
-
                 // Logik nach dem Verschieben der Datei
                 console.log(`Datei wurde als ${newFileName} gespeichert.`);
 
@@ -117,9 +116,9 @@ print_app.post('/upload', async function(req, res, next) {
             });
         }
     }
-    else{
+    else {
         let html = fs.readFileSync(path.join(__dirname, 'pages', 'noprint.html'), 'utf8');
-            html = html.replace('{{fileName}}', uploadedFile.name);
+        html = html.replace('{{fileName}}', uploadedFile.name);
         res.send(html);
     }
 });
@@ -145,7 +144,7 @@ function connectToDatabase() {
         multipleStatements: false
     });
 
-    db.connect(function(err) {
+    db.connect(function (err) {
         if (err) throw err;
         console.log("Connected!");
     });
@@ -156,7 +155,7 @@ function connectToDatabase() {
 function createTokenTable(db) {
     var sql = fs.readFileSync(path.join(__dirname, "createTable.sql"), "utf-8")
     db.query(sql, function (err, _) {
-        if(err) throw err
+        if (err) throw err
         console.log("Token table created")
     })
 }
@@ -177,7 +176,7 @@ function deleteOldTokens(db) {
     db.query(sql2, (err, result) => { if (err) { reject(err) } });
 }
 
-const interval = setInterval(async function() {
+const interval = setInterval(async function () {
     pushTokenToDB(db);
     deleteOldTokens(db);
     new_key = await getNewestToken(db);
@@ -198,21 +197,21 @@ function getNewestToken(db) {
     });
 }
 
-async function isKeyValid(user_key){
+async function isKeyValid(user_key) {
     remainingUses = 0
-    if(isUUID(user_key)){
+    if (isUUID(user_key)) {
         remainingUses = await getKeyUses(db, user_key)
     }
     return remainingUses != null && remainingUses > 0
 }
 
-function useKey(db, toUse){
+function useKey(db, toUse) {
     console.log('Attempting to use key ' + toUse);
-    if(isUUID(toUse)){
+    if (isUUID(toUse)) {
         const sql = "update tokens set uses = uses - 1 WHERE token = ?";
         db.query(sql, [toUse], (err, result) => { if (err) { reject(err) } });
         console.log("Success! The key " + toUse + "was used successfully.")
-    }else{
+    } else {
         print("The key was not used, it did not match a valid UUID.")
     }
 }
@@ -237,7 +236,8 @@ function getKeyUses(db, user_key) {
 
 // Database - Helper
 
-function createToken() {;
+function createToken() {
+    ;
     return uuidv4();
 }
 
