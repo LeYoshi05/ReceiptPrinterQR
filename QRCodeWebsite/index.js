@@ -24,8 +24,11 @@ pushTokenToDB(db);
 // define static assets
 app.use('/styles.css', express.static('styles/styles.css'));
 app.use('/favicon.ico', express.static('assets/favicon.ico'));
+print_app.use('/favicon.ico', express.static('assets/favicon.ico'));
 print_app.use('/upload.css', express.static('styles/upload.css'));
 print_app.use('/printnow.css', express.static('styles/printnow.css'));
+print_app.use('/stand_standpunkt.png', express.static('assets/stand_standpunkt.png'));
+print_app.use('/standpunkt.css', express.static('styles/standpunkt.css'));
 print_app.use(fileUpload({
     limits: { fileSize: maxFileSize}, // 10MB size limit
     useTempFiles : false // store on disk, not in memory
@@ -56,8 +59,11 @@ app.get('/', (req, res) => {
 
 print_app.get('/', async (req, res) => {
     const key = req.query.key;
-
-    if (await isKeyValid(key)) {
+    if (key == null || key == "") {
+        let html = fs.readFileSync(path.join(__dirname, 'pages', 'standStandpunkt.html'), 'utf8');
+        res.send(html);
+    }
+    else if (await isKeyValid(key)) {
         // Serve the upload.html file
         let html = fs.readFileSync(path.join(__dirname, 'pages', 'upload.html'), 'utf8');
         html = html.replace('{{key}}', key);
