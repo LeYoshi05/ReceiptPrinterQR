@@ -16,3 +16,7 @@ p {
     text-align: center;
     font-size: 1.2em;
 }
+
+.design_element {
+    border: 4px solid #38b000;
+}
